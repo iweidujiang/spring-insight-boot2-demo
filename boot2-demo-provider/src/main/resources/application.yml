@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: boot2-demo-provider
+  insight:
+    server-url: http://localhost:9966
+    diagnostic-logs: false
+
+server:
+  port: 18091

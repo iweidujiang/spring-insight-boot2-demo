@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: boot2-demo-consumer
+  insight:
+    server-url: http://localhost:9966
+    diagnostic-logs: false
+
+server:
+  port: 18090
+
+demo:
+  # 拓扑 remoteService 取 URL host；可在 hosts 加：127.0.0.1 boot2-demo-provider
+  provider-url: http://boot2-demo-provider:18091
