@@ -57,6 +57,16 @@ curl http://localhost:18090/call
 - 拓扑边：`boot2-demo-consumer` → `boot2-demo-provider`（remoteService 取自 `@FeignClient(name=...)`）
 - 链路：入口 SERVER + OpenFeign CLIENT
 
+### 验证 Micrometer（consumer）
+
+consumer 已加 Actuator + Prometheus。造数后：
+
+```powershell
+curl -s "http://localhost:18090/actuator/prometheus" | Select-String "spring_insight"
+```
+
+期望出现：`spring_insight_spans_accepted_total`、`spring_insight_span_seconds_*`、`spring_insight_reporter_queue_size` 等。
+
 ### 多套业务共用一台 insight-server 时拓扑怎么画？
 
 **当前行为：一张图、全量边。** 所有上报上来的、带 `remoteService` 的 CLIENT Span 都会进同一张拓扑。  

@@ -4,9 +4,16 @@ spring:
   insight:
     server-url: http://localhost:9966
     diagnostic-logs: false
+    micrometer-enabled: true
 
 server:
   port: 18090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
 
 demo:
   # url 直连无需改 hosts；拓扑 remoteService 优先取 @FeignClient 的 name

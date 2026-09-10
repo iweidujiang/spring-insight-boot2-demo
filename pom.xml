@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>2.7.18</spring-boot.version>
         <spring-cloud.version>2021.0.9</spring-cloud.version>
-        <spring.insight.boot2.version>0.1.0-boot2-SNAPSHOT</spring.insight.boot2.version>
+        <spring.insight.boot2.version>0.1.0-boot2</spring.insight.boot2.version>
     </properties>
 
     <dependencyManagement>

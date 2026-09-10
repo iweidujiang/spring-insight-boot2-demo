@@ -24,6 +24,15 @@
             <groupId>io.github.iweidujiang</groupId>
             <artifactId>spring-insight-agent-starter-boot2</artifactId>
         </dependency>
+        <!-- 验证 Boot2 Micrometer 联动：暴露 /actuator/prometheus -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
