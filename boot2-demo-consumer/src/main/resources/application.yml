@@ -3,7 +3,7 @@ spring:
     name: boot2-demo-consumer
   insight:
     server-url: http://localhost:9966
-    diagnostic-logs: false
+    diagnostic-logs: true
     micrometer-enabled: true
 
 server:

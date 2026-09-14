@@ -5,17 +5,50 @@
 ## 前置
 
 1. JDK 8+（建议 8 或 11）  
-2. 已构建兼容线：
+2. 已构建兼容线 Starter（本工程当前依赖 `0.1.1-boot2-SNAPSHOT`，**必须先 install，否则 Maven 只警告 POM missing，业务仍能启动但不会上报**）：
 
 ```bash
 cd D:\a-github-project\spring-insight\boot2
 mvn -DskipTests install
 ```
 
-3. 已启动 insight-server（主线 Boot3 jar 即可）：
+可用冒烟脚本确认 jar 已进本地仓：
+
+```powershell
+cd D:\a-github-project\spring-insight-boot2-demo
+.\scripts\smoke-check.ps1
+```
+
+若用 **IntelliJ** 启动：改完依赖后务必 **Maven → Reload Project**，再重新 Run。  
+曾出现过只带上空的 `spring-insight-agent-starter-boot2`、**没有** `insight-agent-boot2` 的情况——此时业务能调通，但不会埋点/上报（`/actuator/prometheus` 也没有 `spring_insight_*`）。
+
+3. 已启动 insight-server（**主线 Boot3 Server**，与 Agent 版本线无关）
+
+**开发联调（推荐 Docker，本机打包运行镜像，默认 sqlite）：**
 
 ```bash
-java -jar D:\a-github-project\spring-insight\insight-server\target\insight-server-0.1.0-SNAPSHOT.jar
+cd D:\a-github-project\spring-insight
+mvn -pl insight-server -am package -DskipTests
+docker compose -f compose.dev.yaml up -d --build
+curl -sS http://localhost:9966/api/v1/health
+```
+
+**已发布镜像：**
+
+```bash
+docker run --rm -p 9966:9966 \
+  -e SPRING_INSIGHT_SERVER_STORAGE_MODE=file \
+  -e SPRING_INSIGHT_SERVER_STORAGE_FILE_PATH=/data/spans.json \
+  -v spring-insight-data:/data \
+  ghcr.io/iweidujiang/spring-insight-server:0.1.0
+```
+
+**本机 jar（可选）：**
+
+```bash
+cd D:\a-github-project\spring-insight
+mvn -pl insight-server -am package -DskipTests -Dskip.ui=true
+java -jar insight-server\target\insight-server-0.1.1-SNAPSHOT.jar
 ```
 
 ## 启动

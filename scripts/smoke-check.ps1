@@ -5,7 +5,7 @@
 #   .\scripts\smoke-check.ps1 -HitEndpoints
 
 param(
-    [string]$InsightBoot2Version = "0.1.0-boot2-SNAPSHOT",
+    [string]$InsightBoot2Version = "0.1.1-boot2-SNAPSHOT",
     [switch]$HitEndpoints
 )
 
@@ -32,12 +32,14 @@ Write-Host "== Boot2 Starter GAV ==" -ForegroundColor Cyan
 Write-Host ("io.github.iweidujiang:{0}:{1}" -f $starterArtifact, $InsightBoot2Version)
 
 $jar = Find-StarterJar -Version $InsightBoot2Version -Artifact $starterArtifact
-if (-not $jar) {
-    Write-Host "[FAIL] starter jar not found in local Maven repos" -ForegroundColor Red
+$agentJar = Find-StarterJar -Version $InsightBoot2Version -Artifact "insight-agent-boot2"
+if (-not $jar -or -not $agentJar) {
+    Write-Host "[FAIL] Boot2 Agent/Starter 未安装到本地 Maven 仓库（POM missing 时业务仍可能启动，但不会上报）" -ForegroundColor Red
     Write-Host "Run: cd D:\a-github-project\spring-insight\boot2 ; mvn -DskipTests install"
     exit 1
 }
-Write-Host "[OK] installed: $jar" -ForegroundColor Green
+Write-Host "[OK] starter: $jar" -ForegroundColor Green
+Write-Host "[OK] agent:   $agentJar" -ForegroundColor Green
 
 if (-not $HitEndpoints) {
     Write-Host ""

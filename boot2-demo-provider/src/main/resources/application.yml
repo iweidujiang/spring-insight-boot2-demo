@@ -3,7 +3,7 @@ spring:
     name: boot2-demo-provider
   insight:
     server-url: http://localhost:9966
-    diagnostic-logs: false
+    diagnostic-logs: true
 
 server:
   port: 18091
