@@ -5,7 +5,7 @@
 #   .\scripts\smoke-check.ps1 -HitEndpoints
 
 param(
-    [string]$InsightBoot2Version = "0.1.1-boot2-SNAPSHOT",
+    [string]$InsightBoot2Version = "0.3.0-boot2-SNAPSHOT",
     [switch]$HitEndpoints
 )
 

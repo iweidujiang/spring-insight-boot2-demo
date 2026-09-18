@@ -5,7 +5,7 @@
 ## 前置
 
 1. JDK 8+（建议 8 或 11）  
-2. 已构建兼容线 Starter（本工程当前依赖 `0.1.1-boot2-SNAPSHOT`，**必须先 install，否则 Maven 只警告 POM missing，业务仍能启动但不会上报**）：
+2. 已构建兼容线 Starter（本工程当前依赖 `0.3.0-boot2-SNAPSHOT`，**必须先 install，否则 Maven 只警告 POM missing，业务仍能启动但不会上报**）：
 
 ```bash
 cd D:\a-github-project\spring-insight\boot2
@@ -82,13 +82,14 @@ cd D:\a-github-project\spring-insight-boot2-demo
 
 ```bash
 curl http://localhost:18090/call
+curl http://localhost:18090/call-rt
 ```
 
 打开 http://localhost:9966/ ：
 
 - 服务：`boot2-demo-consumer`、`boot2-demo-provider`
-- 拓扑边：`boot2-demo-consumer` → `boot2-demo-provider`（remoteService 取自 `@FeignClient(name=...)`）
-- 链路：入口 SERVER + OpenFeign CLIENT
+- 拓扑边：`boot2-demo-consumer` → `boot2-demo-provider`（Feign remoteService 优先 name；RestTemplate 为 URI host）
+- 链路：入口 SERVER + OpenFeign / RestTemplate CLIENT
 
 ### 验证 Micrometer（consumer）
 
@@ -121,4 +122,4 @@ curl -s "http://localhost:18090/actuator/prometheus" | Select-String "spring_ins
 | 模块 | 端口 | 作用 |
 |------|------|------|
 | boot2-demo-provider | 18091 | 被调方 SERVER Span |
-| boot2-demo-consumer | 18090 | `/call` → Feign → provider |
+| boot2-demo-consumer | 18090 | `/call` → Feign；`/call-rt` → RestTemplate → provider |
