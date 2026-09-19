@@ -85,6 +85,22 @@ curl http://localhost:18090/call
 curl http://localhost:18090/call-rt
 ```
 
+### 告警 Webhook 收件箱（本地测 insight-server）
+
+consumer 提供钉钉式接口：`POST /insight-alert/webhook`。  
+insight-server 配置：
+
+```text
+spring.insight.server.alert.webhook-url=http://host.docker.internal:18090/insight-alert/webhook
+# 本机 jar 跑 Server 时用：http://127.0.0.1:18090/insight-alert/webhook
+```
+
+查看是否收到：
+
+```powershell
+curl -s http://localhost:18090/insight-alert/recent
+```
+
 打开 http://localhost:9966/ ：
 
 - 服务：`boot2-demo-consumer`、`boot2-demo-provider`

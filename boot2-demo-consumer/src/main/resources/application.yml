@@ -2,9 +2,13 @@ spring:
   application:
     name: boot2-demo-consumer
   insight:
+    # ---- Boot2 Agent 本地联调：全部打开 ----
+    enabled: true
     server-url: http://localhost:9966
-    diagnostic-logs: true
+    ingest-token: change-me
+    http-tracing-enabled: true
     micrometer-enabled: true
+    diagnostic-logs: true
 
 server:
   port: 18090
@@ -14,6 +18,9 @@ management:
     web:
       exposure:
         include: health,info,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 demo:
   # url 直连无需改 hosts；拓扑 remoteService 优先取 @FeignClient 的 name

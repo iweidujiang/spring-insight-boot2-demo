@@ -2,8 +2,21 @@ spring:
   application:
     name: boot2-demo-provider
   insight:
+    enabled: true
     server-url: http://localhost:9966
+    ingest-token: change-me
+    http-tracing-enabled: true
+    micrometer-enabled: true
     diagnostic-logs: true
 
 server:
   port: 18091
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
