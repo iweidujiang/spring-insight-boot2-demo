@@ -20,12 +20,7 @@
             <groupId>io.github.iweidujiang</groupId>
             <artifactId>spring-insight-agent-starter-boot2</artifactId>
         </dependency>
-        <!-- 显式带上采集核心：IDEA 在 SNAPSHOT POM 曾缺失时可能只解析到空 starter -->
-        <dependency>
-            <groupId>io.github.iweidujiang</groupId>
-            <artifactId>insight-agent-boot2</artifactId>
-            <version>${spring.insight.boot2.version}</version>
-        </dependency>
+
     </dependencies>
 
     <build>
