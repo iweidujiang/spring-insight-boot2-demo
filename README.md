@@ -5,29 +5,53 @@
 ## 前置
 
 1. JDK 8+（建议 8 或 11）  
-2. 已构建兼容线 Starter（本工程当前依赖 `0.3.0-boot2-SNAPSHOT`，**必须先 install，否则 Maven 只警告 POM missing，业务仍能启动但不会上报**）：
+2. 已构建 Boot2 Starter（本工程当前依赖 `0.3.2`，**必须先 install，否则 Maven 只警告 POM missing，业务仍能启动但不会上报**）。Boot2 Agent 在 **`2.7.x` 分支仓库根**（不再有 `boot2/` 子目录）。
 
-```bash
-cd D:\a-github-project\spring-insight\boot2
-mvn -DskipTests install
-```
+### 从 `main` 切到 `2.7.x`（防覆盖，务必按序）
 
-可用冒烟脚本确认 jar 已进本地仓：
+`spring-insight` 是**同一个工作目录**切换分支，未提交改动会被带过去或冲突。**禁止**在 `main` 有未提交 Agent 改动时直接 `checkout 2.7.x`。
 
 ```powershell
-cd D:\a-github-project\spring-insight-boot2-demo
-.\scripts\smoke-check.ps1
+# ========== A. 先在 main 收好当前工作（二选一）==========
+cd D:\a-github-project\spring-insight
+
+# 方案 A1（推荐）：提交 main 上的改动后再切
+git status
+git add -A
+git commit -m "feat(agent): W3C traceparent 透传切片1（Servlet + RestTemplate/RestClient）"
+# 若暂时不想提交，用 A2 stash，勿混用漏步骤
+
+# 方案 A2：暂存（含未跟踪文件）
+# git stash push -u -m "wip-main-a1-w3c"
+
+# ========== B. 切到 Boot2 线并确认干净 ==========
+git checkout 2.7.x
+git status
+# 期望：working tree clean（若有冲突先解决，不要强行继续）
+
+# ========== C. 在 2.7.x 上对齐透传改动并 install ==========
+# （由维护者把 main 的 W3C 改动 port 到 insight-agent-boot2 后）
+mvn -DskipTests install
+
+# ========== D. 测完回到 main ==========
+git status   # 2.7.x 上若有未提交改动：先 commit 或 stash
+git checkout main
+# 若用过 A2：
+# git stash pop
 ```
 
-若用 **IntelliJ** 启动：改完依赖后务必 **Maven → Reload Project**，再重新 Run。  
+**insight-server 始终在 `main` 构建/运行**，与 Agent 分支无关；测透传时不要用 `2.7.x` 去编 Server。
+
+若用 **IntelliJ** 启动 demo：改完依赖后务必 **Maven → Reload Project**，再重新 Run。  
 曾出现过只带上空的 `spring-insight-agent-starter-boot2`、**没有** `insight-agent-boot2` 的情况——此时业务能调通，但不会埋点/上报（`/actuator/prometheus` 也没有 `spring_insight_*`）。
 
-3. 已启动 insight-server（**主线 Boot3 Server**，与 Agent 版本线无关）
+3. 已启动 insight-server（**始终用 `main` 的 Boot3 Server**，与 Agent 版本线无关）
 
 **开发联调（推荐 Docker，本机打包运行镜像，默认 sqlite）：**
 
 ```bash
 cd D:\a-github-project\spring-insight
+git checkout main
 mvn -pl insight-server -am package -DskipTests
 docker compose -f compose.dev.yaml up -d --build
 curl -sS http://localhost:9966/api/v1/health
@@ -40,15 +64,16 @@ docker run --rm -p 9966:9966 \
   -e SPRING_INSIGHT_SERVER_STORAGE_MODE=file \
   -e SPRING_INSIGHT_SERVER_STORAGE_FILE_PATH=/data/spans.json \
   -v spring-insight-data:/data \
-  ghcr.io/iweidujiang/spring-insight-server:0.1.0
+  ghcr.io/iweidujiang/spring-insight-server:0.3.2
 ```
 
-**本机 jar（可选）：**
+**本机 jar（可选，`main` 当前为 `0.4.0-SNAPSHOT`）：**
 
 ```bash
 cd D:\a-github-project\spring-insight
+git checkout main
 mvn -pl insight-server -am package -DskipTests -Dskip.ui=true
-java -jar insight-server\target\insight-server-0.1.1-SNAPSHOT.jar
+java -jar insight-server\target\insight-server-0.4.0-SNAPSHOT.jar
 ```
 
 ## 启动
@@ -63,27 +88,31 @@ cd D:\a-github-project\spring-insight-boot2-demo
 mvn -pl boot2-demo-consumer spring-boot:run
 ```
 
-## 冒烟脚本
-
-先确认 Starter 已进本地仓库（不启动进程）：
-
-```powershell
-cd D:\a-github-project\spring-insight-boot2-demo
-.\scripts\smoke-check.ps1
-```
-
-三个进程都起来后，可探测端点：
-
-```powershell
-.\scripts\smoke-check.ps1 -HitEndpoints
-```
-
 ## 造数与验证
 
 ```bash
+# Feign：本切片尚未透传，响应里多为 traceparent=(none)
 curl http://localhost:18090/call
+
+# RestTemplate：本切片验证入口 —— 应看到 traceparent=00-...（非 none）
 curl http://localhost:18090/call-rt
 ```
+
+### 跨服务 Trace 透传（W3C `traceparent`）
+
+**结论：可以用本工程测。** 请走 **`/call-rt`（RestTemplate）**；`/call`（Feign）要等 Agent 下一切片。
+
+前提：本机已 `install` 带透传能力的 `spring-insight-agent-starter-boot2`（见下方「分支切换」），且 insight-server（**main**）已在 9966。
+
+| 步骤 | 操作 | 期望 |
+|------|------|------|
+| 1 | `curl http://localhost:18090/call-rt` | 响应含 `traceparent=00-...-...-01`（不是 `(none)`） |
+| 2 | 对照 `curl http://localhost:18090/call` | Feign 多为 `traceparent=(none)`（切片未覆盖属正常） |
+| 3 | 打开 http://localhost:9966 → 链路追踪 | 点进 consumer 的 `GET /call-rt` 那条 |
+| 4 | 看瀑布 / TraceId | **同一 TraceId** 下既有 `boot2-demo-consumer` 的 SERVER/CLIENT，也有 `boot2-demo-provider` 的 SERVER |
+| 5 | （对比）点进旧的 `/call` Feign 链路 | 仍可能是「各服务各一条 TraceId」 |
+
+关闭透传复测（可选）：两边 yml 设 `spring.insight.http-trace-propagation-enabled: false` 后重启，`/call-rt` 应变回 `traceparent=(none)`。
 
 ### 告警 Webhook 收件箱（本地测 insight-server）
 

@@ -1,11 +1,3 @@
-/**
- * Consumer HTTP 入口：触发 Feign / RestTemplate 出站，形成 consumer→provider 拓扑边。
- *
- * @since：2026-09-07
- * @author：苏渡苇 公众号：苏渡苇
- *
- * GitHub：https://github.com/iweidujiang
- */
 package io.github.iweidujiang.boot2demo.consumer;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +5,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Consumer HTTP 入口：触发 Feign / RestTemplate 出站，形成 consumer→provider 拓扑边。
+ * <p>
+ * 跨服务 Trace 透传（W3C）请用 {@code /call-rt}（RestTemplate）；{@code /call}（Feign）待 Agent 下一切片。
+ * </p>
+ *
+ * @since 2026-09-07
+ * @author 公众号：苏渡苇 GitHub：https://github.com/iweidujiang
+ */
 @RestController
 public class CallController {
 
@@ -39,19 +40,19 @@ public class CallController {
     }
 
     /**
-     * 入口：SERVER Span + Feign CLIENT Span（remoteService 优先 Feign name）。
+     * Feign 出站造数。当前切片<strong>尚未</strong>注入 traceparent，响应里多为 {@code traceparent=(none)}。
      *
      * @return 包装后的 Provider 响应
      */
     @GetMapping("/call")
     public String call() {
-        // 出站 Feign：Insight Boot2 应上报 CLIENT Span 且 remoteService 为 provider host
         String body = providerFeignClient.hello();
-        return "consumer-got: " + body;
+        return "consumer-feign-got: " + body;
     }
 
     /**
-     * RestTemplate CLIENT 造数：{@code remoteService} 取 URI host（如 127.0.0.1）。
+     * RestTemplate 出站造数（本切片验证入口）：应注入 {@code traceparent}，
+     * Provider 回显非 {@code (none)}，且控制台同一 TraceId 含两端 SERVER。
      *
      * @return 包装后的 Provider 响应
      */

@@ -7,6 +7,8 @@ spring:
     server-url: http://localhost:9966
     ingest-token: change-me
     http-tracing-enabled: true
+    # 跨服务 W3C traceparent（RestTemplate /call-rt）；与线程池 context-propagation-enabled 独立
+    http-trace-propagation-enabled: true
     micrometer-enabled: true
     diagnostic-logs: true
 

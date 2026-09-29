@@ -6,6 +6,8 @@ spring:
     server-url: http://localhost:9966
     ingest-token: change-me
     http-tracing-enabled: true
+    # 入站提取 traceparent，与 consumer 共享 TraceId
+    http-trace-propagation-enabled: true
     micrometer-enabled: true
     diagnostic-logs: true
 
