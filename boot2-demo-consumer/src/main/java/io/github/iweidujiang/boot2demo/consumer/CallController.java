@@ -61,4 +61,37 @@ public class CallController {
         String body = restTemplate.getForObject(providerUrl + "/api/hello", String.class);
         return "consumer-rt-got: " + body;
     }
+
+    /**
+     * 跨服务 JDBC 慢查询造数：Consumer SERVER → RestTemplate CLIENT → Provider SERVER → JDBC CLIENT。
+     *
+     * @return Provider JSON
+     */
+    @GetMapping("/call-jdbc-slow")
+    public String callJdbcSlow() {
+        String body = restTemplate.getForObject(providerUrl + "/api/jdbc/slow?ms=600", String.class);
+        return "consumer-jdbc-slow: " + body;
+    }
+
+    /**
+     * 跨服务 JDBC 错误造数。
+     *
+     * @return Provider JSON
+     */
+    @GetMapping("/call-jdbc-error")
+    public String callJdbcError() {
+        String body = restTemplate.getForObject(providerUrl + "/api/jdbc/error", String.class);
+        return "consumer-jdbc-error: " + body;
+    }
+
+    /**
+     * 跨服务快查询：默认阈值下 Provider 侧不应出现 JDBC Span。
+     *
+     * @return Provider JSON
+     */
+    @GetMapping("/call-jdbc-fast")
+    public String callJdbcFast() {
+        String body = restTemplate.getForObject(providerUrl + "/api/jdbc/fast", String.class);
+        return "consumer-jdbc-fast: " + body;
+    }
 }

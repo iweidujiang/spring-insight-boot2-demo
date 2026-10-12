@@ -1,13 +1,24 @@
 spring:
   application:
     name: boot2-demo-provider
+  datasource:
+    url: jdbc:h2:mem:boot2_provider_demo;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
   insight:
     enabled: true
     server-url: http://localhost:9966
     ingest-token: change-me
     http-tracing-enabled: true
-    # 入站提取 traceparent，与 consumer 共享 TraceId
     http-trace-propagation-enabled: true
+    jdbc-tracing-enabled: true
+    jdbc-slow-threshold-ms: 500
     micrometer-enabled: true
     diagnostic-logs: true
 

@@ -98,6 +98,35 @@ curl http://localhost:18090/call
 curl http://localhost:18090/call-rt
 ```
 
+### JDBC 追踪（Provider 内置 H2）
+
+**前置**：在 `spring-insight` 的 **`2.7.x`** 分支对 Boot2 Agent 做完 JDBC 改动后：
+
+```powershell
+cd D:\a-github-project\spring-insight
+git checkout 2.7.x
+mvn -pl spring-insight-agent-starter-boot2 -am install "-DskipTests"
+```
+
+本工程已对齐 `spring.insight.boot2.version=0.4.2`，并在 **provider** 开启：
+
+```yaml
+spring.insight.jdbc-tracing-enabled: true
+spring.insight.jdbc-slow-threshold-ms: 500
+```
+
+种子表 `demo_item`（3 行：widget-a/b/c）。造数接口：
+
+| 场景 | 直连 Provider | 经 Consumer（跨服务同一 Trace） | 期望 |
+|------|---------------|--------------------------------|------|
+| 快 SELECT | `curl http://localhost:18091/api/jdbc/fast` | `curl http://localhost:18090/call-jdbc-fast` | **无** JDBC Span（成功且 &lt;500ms） |
+| 慢 SQL | `curl "http://localhost:18091/api/jdbc/slow?ms=600"` | `curl http://localhost:18090/call-jdbc-slow` | 有 CLIENT/`JDBC`，约 ≥600ms，`db.slow=true` |
+| 错误 SQL | `curl http://localhost:18091/api/jdbc/error` | `curl http://localhost:18090/call-jdbc-error` | JDBC Span `ERROR` / `SQL_ERROR` |
+| 快 INSERT | `curl http://localhost:18091/api/jdbc/write` | — | 默认阈值下无 JDBC Span |
+
+控制台核对：打开 http://localhost:9966 → 链路 → 点进对应 Trace → 瀑布中 Provider 的 SERVER 下应挂 JDBC CLIENT（慢/错）；`remoteService` 形如 `localhost:…` 或空（H2 mem）。  
+若要「成功也全报」：provider yml 设 `jdbc-slow-threshold-ms: 0` 后重启，再打 `/fast`。
+
 ### 跨服务 Trace 透传（W3C `traceparent`）
 
 **结论：可以用本工程测。** 请走 **`/call-rt`（RestTemplate）**；`/call`（Feign）要等 Agent 下一切片。
@@ -166,5 +195,5 @@ curl -s "http://localhost:18090/actuator/prometheus" | Select-String "spring_ins
 
 | 模块 | 端口 | 作用 |
 |------|------|------|
-| boot2-demo-provider | 18091 | 被调方 SERVER Span |
-| boot2-demo-consumer | 18090 | `/call` → Feign；`/call-rt` → RestTemplate → provider |
+| boot2-demo-provider | 18091 | 被调方 SERVER Span；`/api/jdbc/*` H2 造数 |
+| boot2-demo-consumer | 18090 | `/call` → Feign；`/call-rt` → RestTemplate；`/call-jdbc-*` → Provider JDBC |
