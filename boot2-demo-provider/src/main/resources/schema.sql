@@ -4,4 +4,4 @@ CREATE TABLE IF NOT EXISTS demo_item (
     stock INT NOT NULL DEFAULT 0
 );
 
-CREATE ALIAS IF NOT EXISTS SLEEP_MS FOR "java.lang.Thread.sleep";
+CREATE ALIAS IF NOT EXISTS SLEEP_MS FOR "io.github.iweidujiang.boot2demo.provider.jdbc.DemoH2Functions.sleepMs";

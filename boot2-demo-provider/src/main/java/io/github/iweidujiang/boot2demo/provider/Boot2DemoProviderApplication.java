@@ -1,16 +1,17 @@
-/**
- * Boot2 Demo Provider 启动类。
- *
- * @since：2026-09-07
- * @author：苏渡苇 公众号：苏渡苇
- *
- * GitHub：https://github.com/iweidujiang
- */
 package io.github.iweidujiang.boot2demo.provider;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Boot2 Demo Provider 启动类。
+ *
+ * @since 2026-09-07
+ * @author 苏渡苇
+ *
+ * 公众号：苏渡苇
+ * GitHub：https://github.com/iweidujiang
+ */
 @SpringBootApplication
 public class Boot2DemoProviderApplication {
 

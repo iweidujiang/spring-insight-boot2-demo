@@ -30,6 +30,12 @@
             <groupId>io.github.iweidujiang</groupId>
             <artifactId>spring-insight-agent-starter-boot2</artifactId>
         </dependency>
+        <!-- IntelliJ 常丢掉 starter 对 insight-agent-boot2 的传递依赖（POM 中 ${project.version}），显式补上 -->
+        <dependency>
+            <groupId>io.github.iweidujiang</groupId>
+            <artifactId>insight-agent-boot2</artifactId>
+            <version>${spring.insight.boot2.version}</version>
+        </dependency>
 
     </dependencies>
 

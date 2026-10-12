@@ -63,35 +63,32 @@ public class CallController {
     }
 
     /**
-     * 跨服务 JDBC 慢查询造数：Consumer SERVER → RestTemplate CLIENT → Provider SERVER → JDBC CLIENT。
+     * 跨服务 JDBC 慢查询：走 Feign（{@code remoteService=boot2-demo-provider}），避免 URL 直连 IP。
      *
      * @return Provider JSON
      */
     @GetMapping("/call-jdbc-slow")
     public String callJdbcSlow() {
-        String body = restTemplate.getForObject(providerUrl + "/api/jdbc/slow?ms=600", String.class);
-        return "consumer-jdbc-slow: " + body;
+        return "consumer-jdbc-slow: " + providerFeignClient.jdbcSlow(600L);
     }
 
     /**
-     * 跨服务 JDBC 错误造数。
+     * 跨服务 JDBC 错误造数（Feign）。
      *
      * @return Provider JSON
      */
     @GetMapping("/call-jdbc-error")
     public String callJdbcError() {
-        String body = restTemplate.getForObject(providerUrl + "/api/jdbc/error", String.class);
-        return "consumer-jdbc-error: " + body;
+        return "consumer-jdbc-error: " + providerFeignClient.jdbcError();
     }
 
     /**
-     * 跨服务快查询：默认阈值下 Provider 侧不应出现 JDBC Span。
+     * 跨服务快查询（Feign）；默认阈值下 Provider 侧不应出现 JDBC Span。
      *
      * @return Provider JSON
      */
     @GetMapping("/call-jdbc-fast")
     public String callJdbcFast() {
-        String body = restTemplate.getForObject(providerUrl + "/api/jdbc/fast", String.class);
-        return "consumer-jdbc-fast: " + body;
+        return "consumer-jdbc-fast: " + providerFeignClient.jdbcFast();
     }
 }

@@ -43,7 +43,8 @@ git checkout main
 **insight-server 始终在 `main` 构建/运行**，与 Agent 分支无关；测透传时不要用 `2.7.x` 去编 Server。
 
 若用 **IntelliJ** 启动 demo：改完依赖后务必 **Maven → Reload Project**，再重新 Run。  
-曾出现过只带上空的 `spring-insight-agent-starter-boot2`、**没有** `insight-agent-boot2` 的情况——此时业务能调通，但不会埋点/上报（`/actuator/prometheus` 也没有 `spring_insight_*`）。
+曾出现过 classpath 只有 `spring-insight-agent-starter-boot2`、**没有** `insight-agent-boot2`——业务能调通，但启动无 `[Boot2配置]` / `[JDBC]` 日志、也不上报。  
+本工程已**显式**依赖 `insight-agent-boot2`；Reload 后确认 Run Configuration classpath 含该 jar。
 
 3. 已启动 insight-server（**始终用 `main` 的 Boot3 Server**，与 Agent 版本线无关）
 
@@ -108,7 +109,7 @@ git checkout 2.7.x
 mvn -pl spring-insight-agent-starter-boot2 -am install "-DskipTests"
 ```
 
-本工程已对齐 `spring.insight.boot2.version=0.4.2`，并在 **provider** 开启：
+本工程已对齐 `spring.insight.boot2.version=0.5.0`，并在 **provider** 开启：
 
 ```yaml
 spring.insight.jdbc-tracing-enabled: true
@@ -119,12 +120,13 @@ spring.insight.jdbc-slow-threshold-ms: 500
 
 | 场景 | 直连 Provider | 经 Consumer（跨服务同一 Trace） | 期望 |
 |------|---------------|--------------------------------|------|
-| 快 SELECT | `curl http://localhost:18091/api/jdbc/fast` | `curl http://localhost:18090/call-jdbc-fast` | **无** JDBC Span（成功且 &lt;500ms） |
-| 慢 SQL | `curl "http://localhost:18091/api/jdbc/slow?ms=600"` | `curl http://localhost:18090/call-jdbc-slow` | 有 CLIENT/`JDBC`，约 ≥600ms，`db.slow=true` |
-| 错误 SQL | `curl http://localhost:18091/api/jdbc/error` | `curl http://localhost:18090/call-jdbc-error` | JDBC Span `ERROR` / `SQL_ERROR` |
+| 快 SELECT | `curl http://localhost:18091/api/jdbc/fast` | `curl http://localhost:18090/call-jdbc-fast`（Feign） | **无** JDBC Span（成功且 &lt;500ms） |
+| 慢 SQL | `curl "http://localhost:18091/api/jdbc/slow?ms=600"` | `curl http://localhost:18090/call-jdbc-slow`（Feign） | 有 CLIENT/`JDBC`，约 ≥600ms，`db.slow=true` |
+| 错误 SQL | `curl http://localhost:18091/api/jdbc/error` | `curl http://localhost:18090/call-jdbc-error`（Feign） | JDBC Span `ERROR` / `SQL_ERROR` |
 | 快 INSERT | `curl http://localhost:18091/api/jdbc/write` | — | 默认阈值下无 JDBC Span |
 
-控制台核对：打开 http://localhost:9966 → 链路 → 点进对应 Trace → 瀑布中 Provider 的 SERVER 下应挂 JDBC CLIENT（慢/错）；`remoteService` 形如 `localhost:…` 或空（H2 mem）。  
+控制台核对：http://localhost:9966 → 链路 → 瀑布中 Provider SERVER 下挂 JDBC CLIENT；拓扑边应为 `consumer → boot2-demo-provider`（Feign name）以及 `provider → h2:mem:boot2_provider_demo`（勿用整段 JDBC URL / `127.0.0.1`）。  
+链路列表若曾点过拓扑库节点，侧栏会记住 `service` 过滤——清空服务筛选或选「全部」即可看到 Trace。  
 若要「成功也全报」：provider yml 设 `jdbc-slow-threshold-ms: 0` 后重启，再打 `/fast`。
 
 ### 跨服务 Trace 透传（W3C `traceparent`）

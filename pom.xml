@@ -23,8 +23,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>2.7.18</spring-boot.version>
         <spring-cloud.version>2021.0.9</spring-cloud.version>
-        <!-- JDBC 追踪：2.7.x 本地 install 后再测；与主线数字对齐 -->
-        <spring.insight.boot2.version>0.4.2</spring.insight.boot2.version>
+        <!-- 对齐 Agent 0.5.0；2.7.x 本地 install 后再测 -->
+        <spring.insight.boot2.version>0.5.0</spring.insight.boot2.version>
     </properties>
 
     <dependencyManagement>
